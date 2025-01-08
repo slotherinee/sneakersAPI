@@ -48,3 +48,23 @@ export const deleteUser = async (req: Request, res: Response) => {
         res.status(404).json({ message: "User not found" });
     }
 };
+
+export const getFavorites = async (req: Request, res: Response) => {
+    try {
+        const { userId } = req.params;
+        const favorites = await userService.getUserFavorites(parseInt(userId));
+        res.json(favorites);
+    } catch (error) {
+        res.status(500).json({ message: (error as Error).message });
+    }
+};
+
+export const addToFavorite = async (req: Request, res: Response) => {
+    try {
+        const { userId, sneakerId } = req.params;
+        const favorite = await userService.addToFavorite(parseInt(userId), parseInt(sneakerId));
+        res.json(favorite);
+    } catch (error) {
+        res.status(500).json({ message: (error as Error).message });
+    }
+}; 
