@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  username  String    @unique
+  password  String
+  isAdmin   Boolean   @default(false)
+  orders    Order[]
+  favorites Favorite[]
+}
+
+model Sneaker {
+  id         Int       @id @default(autoincrement())
+  name       String
+  brand      String
+  price      Float
+  stock      Int
+  imageUrl   String
+  orders     Order[]
+  favoritedBy Favorite[]
+}
+
+model Favorite {
+  id        Int     @id @default(autoincrement())
+  user      User    @relation(fields: [userId], references: [id])
+  userId    Int
+  sneaker   Sneaker @relation(fields: [sneakerId], references: [id])
+  sneakerId Int
+
+  @@unique([userId, sneakerId])
+}
+
+model Order {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  sneakerId Int
+  quantity  Int
+  status    OrderStatus @default(PENDING)
+  user      User    @relation(fields: [userId], references: [id])
+  sneaker   Sneaker @relation(fields: [sneakerId], references: [id])
+}
+
+enum OrderStatus {
+  PENDING
+  READY
+  DELIVERING
+  DELIVERED
+}
