@@ -16,5 +16,20 @@ export default {
     },
     async deleteUser(id: number) {
         return await prisma.user.delete({ where: { id } });
-    }
+    },
+    async getUserFavorites(userId: number) {
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            include: { favorites: true },
+        })
+        return user?.favorites || []
+    },
+    async addToFavorite(userId: number, sneakerId: number) {
+        return await prisma.user.update({
+            where: { id: userId },
+            data: {
+                favorites: { connect: { id: sneakerId }}
+            }
+        })
+    },
 }
