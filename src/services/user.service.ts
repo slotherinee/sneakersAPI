@@ -25,11 +25,35 @@ export default {
         return user?.favorites || []
     },
     async addToFavorite(userId: number, sneakerId: number) {
-        return await prisma.user.update({
-            where: { id: userId },
+        const user = await prisma.user.findUnique({ where: { id: userId } });
+        if (!user) {
+            throw new Error(`User with id ${userId} does not exist.`);
+        }
+
+        const sneaker = await prisma.sneaker.findUnique({ where: { id: sneakerId } });
+        if (!sneaker) {
+            throw new Error(`Sneaker with id ${sneakerId} does not exist.`);
+        }
+        const existingFavorite = await prisma.favorite.findUnique({
+            where: {
+                userId_sneakerId: { userId, sneakerId },
+            },
+        });
+
+        if (existingFavorite) {
+            throw new Error(`Sneaker with id ${sneakerId} is already in the user's favorites.`);
+        }
+
+        const favorite = await prisma.favorite.create({
             data: {
-                favorites: { connect: { id: sneakerId }}
-            }
-        })
-    },
+                userId,
+                sneakerId,
+            },
+            include: {
+                sneaker: true,
+            },
+        });
+
+        return favorite;
+        },
 }

@@ -61,9 +61,14 @@ export const getFavorites = async (req: Request, res: Response) => {
 
 export const addToFavorite = async (req: Request, res: Response) => {
     try {
-        const { userId, sneakerId } = req.params;
-        const favorite = await userService.addToFavorite(parseInt(userId), parseInt(sneakerId));
-        res.json(favorite);
+        const { userId, sneakerId } = req.body;
+        if (!userId || !sneakerId) {
+            res.status(400).json({ error: 'userId and sneakerId are required.' });
+          } else {
+            const updatedUser = await userService.addToFavorite(+userId, +sneakerId)
+            res.json(updatedUser);
+            return
+          }
     } catch (error) {
         res.status(500).json({ message: (error as Error).message });
     }
