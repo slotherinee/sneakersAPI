@@ -18,11 +18,19 @@ export default {
         return await prisma.user.delete({ where: { id } });
     },
     async getUserFavorites(userId: number) {
-        const user = await prisma.user.findUnique({
-            where: { id: userId },
-            include: { favorites: true },
-        })
-        return user?.favorites || []
+        const user = await prisma.user.findUnique({ where: { id: userId } });
+        if (!user) {
+            throw new Error(`User with id ${userId} does not exist.`);
+        }
+    
+        const favorites = await prisma.favorite.findMany({
+            where: { userId },
+            include: {
+                sneaker: true,
+            },
+        });
+    
+        return favorites.map((favorite) => favorite.sneaker);
     },
     async addToFavorite(userId: number, sneakerId: number) {
         const user = await prisma.user.findUnique({ where: { id: userId } });

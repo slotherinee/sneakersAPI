@@ -20,14 +20,33 @@ export default {
         });
     },
     async createOrder(userId: number, sneakerId: number, quantity: number) {
-        return await prisma.order.create({
-            data: {
-                userId,
-                sneakerId,
-                quantity,
-                status: "PENDING",
-            }
-        })
+    const sneaker = await prisma.sneaker.findUnique({ where: { id: sneakerId } });
+
+    if (!sneaker) {
+        throw new Error(`Sneaker with id ${sneakerId} does not exist.`);
+    }
+
+    if (sneaker.stock < quantity) {
+        throw new Error(`Insufficient stock for sneaker with id ${sneakerId}. Available stock: ${sneaker.stock}`);
+    }
+
+    const order = await prisma.order.create({
+        data: {
+            userId,
+            sneakerId,
+            quantity,
+            status: "PENDING",
+        },
+    });
+
+    await prisma.sneaker.update({
+        where: { id: sneakerId },
+        data: {
+            stock: sneaker.stock - quantity,
+        },
+    });
+
+    return order;
     },
     async updateOrderStatus(orderId: number, status: OrderStatus) {
         return await prisma.order.update({
