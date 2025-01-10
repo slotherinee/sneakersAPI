@@ -1,5 +1,6 @@
 import prisma from "@db/prisma";
 import { CreateUserDto, UpdateUserDto } from "src/dto/user.dto";
+import { Favorite } from "src/types/favorite.types";
 
 export default {
     async getAllUsers() {
@@ -22,15 +23,15 @@ export default {
         if (!user) {
             throw new Error(`User with id ${userId} does not exist.`);
         }
-    
+
         const favorites = await prisma.favorite.findMany({
             where: { userId },
             include: {
                 sneaker: true,
             },
         });
-    
-        return favorites.map((favorite) => favorite.sneaker);
+
+        return favorites.map((favorite: Favorite) => favorite.sneaker);
     },
     async addToFavorite(userId: number, sneakerId: number) {
         const user = await prisma.user.findUnique({ where: { id: userId } });
@@ -63,5 +64,5 @@ export default {
         });
 
         return favorite;
-        },
+    },
 }
